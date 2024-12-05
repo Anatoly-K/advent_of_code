@@ -8,7 +8,7 @@ import java.util.List;
 public class Task {
     public static void main(String[] args) {
         AdventReadUtils adventReadUtils = new AdventReadUtils();
-        List<String> input = adventReadUtils.readDataAsString(AdventReadUtils.INPUT_TYPE.data, "04");
+        List<String> input = adventReadUtils.readDataAsString(AdventReadUtils.INPUT_TYPE.test, "04");
       // taskA(input);
         taskB(input);
 
