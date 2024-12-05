@@ -124,7 +124,6 @@ public class Task {
                         if (checkMas(input, way, line, column)) {
                             counter++;
                             isElement = true;
-                            //    System.out.println("Found word");
                         }
                     }
                 }
