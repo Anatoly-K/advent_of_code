@@ -13,10 +13,12 @@ public class AdventReadUtils {
         data, test
     }
 
+    String path = "/Users/anatoly.kondratiev/IdeaProjects/advent-2024-remote/advent_of_code/src/Day";
+
     public List<List<Integer>> readData(INPUT_TYPE inputType, String dayNum) {
         List<List<Integer>> result = new ArrayList<>();
 
-        String filePath = "/Users/anatoly.kondratiev/IdeaProjects/advent-2024/src/Day" + dayNum + "/" + (inputType == INPUT_TYPE.data ? "data.input" : "test.input");
+        String filePath =path + dayNum + "/" + (inputType == INPUT_TYPE.data ? "data.input" : "test.input");
 
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -34,7 +36,7 @@ public class AdventReadUtils {
     public List<String> readDataAsString(INPUT_TYPE inputType, String dayNum) {
         List<String> result = new ArrayList<>();
 
-        String filePath = "/Users/anatoly.kondratiev/IdeaProjects/advent-2024/src/Day" + dayNum + "/" + (inputType == INPUT_TYPE.data ? "data.input" : "test.input");
+        String filePath = path + dayNum + "/" + (inputType == INPUT_TYPE.data ? "data.input" : "test.input");
 
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
