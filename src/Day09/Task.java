@@ -33,13 +33,11 @@ public class Task {
         List<PlaceInMemory> memorySpaces = new ArrayList<>();
         List<PlaceInMemory> memoryNumbers = new ArrayList<>();
         long idNumber = 0;
-        // int index = 0;
         for (int i = 0; i < input.length(); i++) {
             int originalStringNumber = Integer.parseInt(input.charAt(i) + "");
             if (i % 2 != 0) {
                 for (int j = 0; j < originalStringNumber; j++) {
                     numbers.add(null);
-                    //         index++;
                 }
                 if (originalStringNumber > 0) {
                     memorySpaces.add(new PlaceInMemory(numbers.size() - originalStringNumber, numbers.size() - 1));
@@ -47,7 +45,6 @@ public class Task {
             } else {
                 for (int j = 0; j < originalStringNumber; j++) {
                     numbers.add(idNumber);
-                    //              index++;
                 }
                 memoryNumbers.add(new PlaceInMemory(numbers.size() - originalStringNumber, numbers.size() - 1));
                 idNumber++;
