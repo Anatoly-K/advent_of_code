@@ -33,6 +33,26 @@ public class AdventReadUtils {
         return result;
     }
 
+    public List<List<String>> readDataAsCharMap(INPUT_TYPE inputType, String dayNum) {
+        List<List<String>> result = new ArrayList<>();
+
+        String filePath = path + dayNum + "/" + (inputType == INPUT_TYPE.data ? "data.input" : "test.input");
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                List<String> lineWithChar = new ArrayList<>();
+                for(char c:line.toCharArray()){
+                    lineWithChar.add(String.valueOf(c));
+                }
+                result.add(lineWithChar);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     public List<List<Integer>> readDataOneDigitOneInt(INPUT_TYPE inputType, String dayNum) {
         List<List<Integer>> result = new ArrayList<>();
 
