@@ -10,6 +10,24 @@ import java.util.regex.Pattern;
 public class Task {
 
     static List<List<Cell>> cellMap = new ArrayList<>();
+    static List<List<Cell>> cellMapCopy = new ArrayList<>();
+
+    public static List<List<Cell>> copyMap(List<List<Cell>> cellMap) {
+        List<List<Cell>> cellMapCopy = new ArrayList<>();
+        for (int i = 0; i < cellMap.size(); i++) {
+            List<Cell> row = new ArrayList<>();
+            for (int j = 0; j < cellMap.get(i).size(); j++) {
+                Cell cell = new Cell();
+                cell.type = cellMap.get(i).get(j).type;
+                cell.x = cellMap.get(i).get(j).x;
+                cell.y = cellMap.get(i).get(j).y;
+                row.add(cell);
+            }
+            cellMapCopy.add(row);
+        }
+        return cellMapCopy;
+    }
+
     static int robotX = 0;
     static int robotY = 0;
 
@@ -20,10 +38,10 @@ public class Task {
         printMap(cellMap);
         List<Direction> directions = convertStringsToDirections(inputAsListOfStrings);
         System.out.println(directions);
-
+        cellMapCopy = copyMap(cellMap);
         for (Direction direction : directions) {
             System.out.println("Direction: " + direction);
-            boolean robotWasMoved = tryToMove(robotX, robotY, direction);
+            boolean robotWasMoved = tryToMoveInitial(robotX, robotY, direction);
             if (robotWasMoved) {
                 switch (direction) {
                     case UP:
@@ -39,18 +57,24 @@ public class Task {
                         robotX++;
                         break;
                 }
+                cellMapCopy = copyMap(cellMap);
+            } else {
+                cellMap = copyMap(cellMapCopy);
             }
             //  printMap(cellMap);
-            //  System.out.println();
+            System.out.println();
         }
         System.out.println(calculatePower());
+
+        //1449265 too high
+        //1448458
     }
 
     private static long calculatePower() {
         long power = 0;
         for (int y = 0; y < cellMap.size(); y++) {
             for (int x = 0; x < cellMap.get(y).size(); x++) {
-                if (cellMap.get(y).get(x).type == CellType.BOX) {
+                if (cellMap.get(y).get(x).type == CellType.BOX_L) {
                     power += (long) y * 100 + x;
                 }
             }
@@ -58,21 +82,82 @@ public class Task {
         return power;
     }
 
-    private static boolean tryToMove(int x, int y, Direction direction) {
+    enum ObjectToMove {
+        ROBOT, BOX
+    }
+
+//    private static boolean tryToMove(int x, int y, Integer x2, Integer y2, Direction direction, ObjectToMove objectToMove) {
+//        Cell nextCell = switch (direction) {
+//            case UP -> cellMap.get(y - 1).get(x);
+//            case DOWN -> cellMap.get(y + 1).get(x);
+//            case LEFT -> cellMap.get(y).get(x - 1);
+//            case RIGHT -> cellMap.get(y).get(x + 1);
+//        };
+//
+//        //if horizontal move
+//        if (direction == Direction.LEFT || direction == Direction.RIGHT) {
+//            if (nextCell.type == CellType.EMPTY) {
+//                nextCell.type = cellMap.get(y).get(x).type;
+//                cellMap.get(y).get(x).type = CellType.EMPTY;
+//                return true;
+//            } else if (nextCell.type == CellType.WALL) {
+//                return false;
+//            } else if (nextCell.type == CellType.BOX_L) {
+//                if (tryToMove(nextCell.x, nextCell.y, null, null, direction, ObjectToMove.BOX)) {
+//                    nextCell.type = cellMap.get(y).get(x).type;
+//                    cellMap.get(y).get(x).type = CellType.EMPTY;
+//                    return true;
+//                } else {
+//                    return false;
+//                }
+//            }
+//        }
+//        //vertical move
+//        else {
+//            if (nextCell.type == CellType.WALL) {
+//                return false;
+//            } else if (nextCell.type == CellType.EMPTY) {
+//                if (x2 != null || y2 != null) {
+////                    if (objectToMove == ObjectToMove.BOX) {
+////                        cellMap.get(y2).get(x2).type = CellType.BOX_L;
+////                    }
+//
+//                    Cell cellNExtToEmptyThatMightBeOccupied = cellMap.get(y2).get(x2).type = CellType.BOX_L;
+//                }
+//                nextCell.type = cellMap.get(y).get(x).type;
+//                cellMap.get(y).get(x).type = CellType.EMPTY;
+//                return true;
+//            } else if (nextCell.type == CellType.BOX_R) {
+//                if (tryToMove(nextCell.x, nextCell.y, direction, ObjectToMove.BOX)) {
+//                    nextCell.type = cellMap.get(y).get(x).type;
+//                    cellMap.get(y).get(x).type = CellType.EMPTY;
+//                    return true;
+//                } else {
+//                    return false;
+//                }
+//            }
+//        }
+//
+//        return true;
+//    }
+
+    private static boolean tryToMoveHorizontally(int x, int y, Direction direction) {
         Cell nextCell = switch (direction) {
             case UP -> cellMap.get(y - 1).get(x);
             case DOWN -> cellMap.get(y + 1).get(x);
             case LEFT -> cellMap.get(y).get(x - 1);
             case RIGHT -> cellMap.get(y).get(x + 1);
         };
+
+        //if horizontal move
         if (nextCell.type == CellType.EMPTY) {
             nextCell.type = cellMap.get(y).get(x).type;
             cellMap.get(y).get(x).type = CellType.EMPTY;
             return true;
         } else if (nextCell.type == CellType.WALL) {
             return false;
-        } else if (nextCell.type == CellType.BOX) {
-            if (tryToMove(nextCell.x, nextCell.y, direction)) {
+        } else if (nextCell.type == CellType.BOX_L || nextCell.type == CellType.BOX_R) {
+            if (tryToMoveHorizontally(nextCell.x, nextCell.y, direction)) {
                 nextCell.type = cellMap.get(y).get(x).type;
                 cellMap.get(y).get(x).type = CellType.EMPTY;
                 return true;
@@ -80,7 +165,132 @@ public class Task {
                 return false;
             }
         }
-        return true;
+        return false;
+    }
+
+    private static boolean tryToMoveInitial(int x, int y, Direction direction) {
+        if (direction == Direction.LEFT || direction == Direction.RIGHT) {
+            return tryToMoveHorizontally(x, y, direction);
+        } else {
+            return (tryToMoveVertically(x, y, null, null, direction));
+        }
+    }
+
+    private static boolean tryToMoveVertically(int x, int y, Integer x2, Integer y2, Direction direction) {
+        Cell nextCell_L = switch (direction) {
+            case UP -> cellMap.get(y - 1).get(x);
+            case DOWN -> cellMap.get(y + 1).get(x);
+            case LEFT -> cellMap.get(y).get(x - 1);
+            case RIGHT -> cellMap.get(y).get(x + 1);
+        };
+
+        Cell nextCell_R = null;
+        if (x2 != null) {
+            nextCell_R = switch (direction) {
+                case UP -> cellMap.get(y2 - 1).get(x2);
+                case DOWN -> cellMap.get(y2 + 1).get(x2);
+                case LEFT -> cellMap.get(y2).get(x2 - 1);
+                case RIGHT -> cellMap.get(y2).get(x2 + 1);
+            };
+        }
+
+        //is wall
+        if (bothAreWalls(nextCell_L, nextCell_R)) {
+            return false;
+        } else if (x2 != null && anyIsWall(nextCell_L, nextCell_R)) {
+            return false;
+        } else if (x2 == null && nextCell_L.type == CellType.WALL) {
+            return false;
+        }
+        //is empty
+        else if (bothAreEmpty(nextCell_L, nextCell_R)) {
+            if (x2 != null) {
+                nextCell_R.type = cellMap.get(y2).get(x2).type;
+                nextCell_L.type = cellMap.get(y).get(x).type;
+                cellMap.get(y2).get(x2).type = CellType.EMPTY;
+                cellMap.get(y).get(x).type = CellType.EMPTY;
+            } else {
+                nextCell_L.type = cellMap.get(y).get(x).type;
+                cellMap.get(y).get(x).type = CellType.EMPTY;
+            }
+            return true;
+        } else if (x2 == null && nextCell_L.type == CellType.EMPTY) {
+            nextCell_L.type = cellMap.get(y).get(x).type;
+            cellMap.get(y).get(x).type = CellType.EMPTY;
+        }
+        //I'm pushing box already
+        else if (x2 != null && nextCell_L.type == CellType.BOX_L && nextCell_R.type == CellType.BOX_R) {
+            if (tryToMoveVertically(nextCell_L.x, nextCell_L.y, nextCell_R.x, nextCell_R.y, direction)) {
+                nextCell_L.type = cellMap.get(y).get(x).type;
+                cellMap.get(y).get(x).type = CellType.EMPTY;
+                nextCell_R.type = cellMap.get(y2).get(x2).type;
+                cellMap.get(y2).get(x2).type = CellType.EMPTY;
+                return true;
+            } else {
+                return false;
+            }
+        } else if (x2 == null && nextCell_L.type == CellType.BOX_L) {
+            if (tryToMoveVertically(nextCell_L.x, nextCell_L.y, nextCell_L.x + 1, nextCell_L.y, direction)) {
+                nextCell_L.type = cellMap.get(y).get(x).type;
+                cellMap.get(y).get(x).type = CellType.EMPTY;
+                return true;
+            } else {
+                return false;
+            }
+        } else if (x2 == null && nextCell_L.type == CellType.BOX_R) {
+            if (tryToMoveVertically(nextCell_L.x - 1, nextCell_L.y, nextCell_L.x, nextCell_L.y, direction)) {
+                nextCell_L.type = cellMap.get(y).get(x).type;
+                cellMap.get(y).get(x).type = CellType.EMPTY;
+                return true;
+            } else {
+                return false;
+            }
+        } else if (x2 != null && nextCell_L.type == CellType.BOX_R && nextCell_R.type == CellType.BOX_L) {
+            if (tryToMoveVertically(nextCell_L.x - 1, nextCell_L.y, nextCell_L.x, nextCell_L.y, direction) &&
+                    tryToMoveVertically(nextCell_R.x, nextCell_R.y, nextCell_R.x + 1, nextCell_R.y, direction)) {
+                nextCell_R.type = cellMap.get(y2).get(x2).type;
+                cellMap.get(y2).get(x2).type = CellType.EMPTY;
+                nextCell_L.type = cellMap.get(y).get(x).type;
+                cellMap.get(y).get(x).type = CellType.EMPTY;
+                return true;
+            } else {
+                return false;
+            }
+        } else if (x2 != null && nextCell_L.type == CellType.BOX_R && nextCell_R.type == CellType.EMPTY) {
+            if (tryToMoveVertically(nextCell_L.x - 1, nextCell_L.y, nextCell_L.x, nextCell_L.y, direction)) {
+                nextCell_L.type = cellMap.get(y).get(x).type;
+                cellMap.get(y).get(x).type = CellType.EMPTY;
+                nextCell_R.type = cellMap.get(y2).get(x2).type;
+                cellMap.get(y2).get(x2).type = CellType.EMPTY;
+                return true;
+            } else {
+                return false;
+            }
+        } else if (x2 != null && nextCell_R.type == CellType.BOX_L && nextCell_L.type == CellType.EMPTY) {
+            if (tryToMoveVertically(nextCell_R.x, nextCell_L.y, nextCell_R.x + 1, nextCell_L.y, direction)) {
+                nextCell_L.type = cellMap.get(y).get(x).type;
+                cellMap.get(y).get(x).type = CellType.EMPTY;
+                nextCell_R.type = cellMap.get(y2).get(x2).type;
+                cellMap.get(y2).get(x2).type = CellType.EMPTY;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean bothAreEmpty(Cell cell1, Cell cell2) {
+        return (cell1 == null || cell1.type == CellType.EMPTY) && (cell2 == null || cell2.type == CellType.EMPTY);
+    }
+
+    private static boolean anyIsWall(Cell cell1, Cell cell2) {
+        return (cell1 != null && cell1.type == CellType.WALL) || (cell2 != null && cell2.type == CellType.WALL);
+    }
+
+    private static boolean bothAreWalls(Cell cell1, Cell cell2) {
+        return (cell1 != null && cell1.type == CellType.WALL) && (cell2 != null && cell2.type == CellType.WALL);
     }
 
     private static List<Direction> convertStringsToDirections(List<String> inputStrings) {
@@ -112,27 +322,46 @@ public class Task {
                 break;
             }
             List<Cell> row = new ArrayList<>();
+            int currentX = 0;
             for (int j = 0; j < line.length(); j++) {
-                Cell cell = new Cell();
-                cell.x = j;
-                cell.y = i;
+                Cell cell1 = new Cell();
+                cell1.y = i;
+                cell1.x = currentX;
+                currentX++;
+
+                Cell cell2 = new Cell();
+                cell2.y = i;
+                cell2.x = currentX;
+                currentX++;
+
                 switch (line.charAt(j)) {
                     case '#':
-                        cell.type = CellType.WALL;
+                        cell1.type = CellType.WALL;
+                        row.add(cell1);
+                        cell2.type = CellType.WALL;
+                        row.add(cell2);
                         break;
                     case '.':
-                        cell.type = CellType.EMPTY;
+                        cell1.type = CellType.EMPTY;
+                        row.add(cell1);
+                        cell2.type = CellType.EMPTY;
+                        row.add(cell2);
                         break;
                     case '@':
-                        cell.type = CellType.ROBOT;
-                        robotX = j;
-                        robotY = i;
+                        cell1.type = CellType.ROBOT;
+                        row.add(cell1);
+                        robotX = cell1.x;
+                        robotY = cell1.y;
+                        cell2.type = CellType.EMPTY;
+                        row.add(cell2);
                         break;
                     case 'O':
-                        cell.type = CellType.BOX;
+                        cell1.type = CellType.BOX_L;
+                        row.add(cell1);
+                        cell2.type = CellType.BOX_R;
+                        row.add(cell2);
                         break;
                 }
-                row.add(cell);
             }
             map.add(row);
         }
@@ -152,8 +381,11 @@ public class Task {
                     case ROBOT:
                         System.out.print("@");
                         break;
-                    case BOX:
-                        System.out.print("O");
+                    case BOX_L:
+                        System.out.print("[");
+                        break;
+                    case BOX_R:
+                        System.out.print("]");
                         break;
                 }
             }
@@ -172,6 +404,6 @@ public class Task {
     }
 
     enum CellType {
-        WALL, EMPTY, BOX, ROBOT
+        WALL, EMPTY, BOX_L, BOX_R, ROBOT
     }
 }
