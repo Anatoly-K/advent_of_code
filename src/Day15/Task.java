@@ -59,21 +59,12 @@ public class Task {
     }
 
     private static boolean tryToMove(int x, int y, Direction direction) {
-        Cell nextCell = null;
-        switch (direction) {
-            case UP:
-                nextCell = cellMap.get(y - 1).get(x);
-                break;
-            case DOWN:
-                nextCell = cellMap.get(y + 1).get(x);
-                break;
-            case LEFT:
-                nextCell = cellMap.get(y).get(x - 1);
-                break;
-            case RIGHT:
-                nextCell = cellMap.get(y).get(x + 1);
-                break;
-        }
+        Cell nextCell = switch (direction) {
+            case UP -> cellMap.get(y - 1).get(x);
+            case DOWN -> cellMap.get(y + 1).get(x);
+            case LEFT -> cellMap.get(y).get(x - 1);
+            case RIGHT -> cellMap.get(y).get(x + 1);
+        };
         if (nextCell.type == CellType.EMPTY) {
             nextCell.type = cellMap.get(y).get(x).type;
             cellMap.get(y).get(x).type = CellType.EMPTY;
