@@ -21,11 +21,11 @@ public class Task {
         List<Direction> directions = convertStringsToDirections(inputAsListOfStrings);
         System.out.println(directions);
 
-        for (int i = 0; i < directions.size(); i++) {
-            System.out.println("Direction: " + directions.get(i));
-            boolean robotWasMoved = tryToMove(robotX, robotY, directions.get(i));
+        for (Direction direction : directions) {
+            System.out.println("Direction: " + direction);
+            boolean robotWasMoved = tryToMove(robotX, robotY, direction);
             if (robotWasMoved) {
-                switch (directions.get(i)) {
+                switch (direction) {
                     case UP:
                         robotY--;
                         break;
